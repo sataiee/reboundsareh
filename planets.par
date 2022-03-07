@@ -1,0 +1,16 @@
+# This file contains the properties of the planets that will be used in the simulation. Every planet in one line
+# migration types:
+#                 "torque"  migration by torques
+#                 "timescale"  migration by given timescales in this file
+#                 "oneside"  migration by given timescales in this file and a one-sided trap
+#                 "twoside"  migration by given timescales in this file and two-sided trap
+#                 "withbump"  migration by given timescales in this file and a two-sided trap plus a bump
+#
+# NOTE: The trap's parameters should be given in the program.c file
+#
+# timescales in orbit, positive tau_a: inward migration, positive tau_e: damping
+#
+# Name        Mass     Semi-majorAxis  e	migration type  tau_a	tau_e   t_pert	a_pert
+Planet1       2e-5       0.5          0.        withbump	1e5	   7e3     0     1e-4
+Planet2       1.12e-5    0.9          0.        withbump	2e5	   1e2     0     1e-4
+Planet3       3.47e-4    1.62          0.       withbump	1.5e5	   7e3     0     1e-4

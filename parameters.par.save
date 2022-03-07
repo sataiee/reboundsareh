@@ -1,0 +1,26 @@
+alpha_sigma	1.5
+sigma0		2e-4
+h0		0.05
+flaring		0.5
+pha_visc      5e-4
+
+# 0: sg included; 1: sg ignored
+without_sg_term 0
+
+# 0: corotation damping of Fendyke; 
+# 1: no eccentricity damping
+# 2: Both Lindblad and corotation torques are damped as Brasser+18
+without_e_damping 2
+
+# for locally isothermal models it should be 0
+isothermal 0
+
+# if you want to calculate the partly saturated torque (P11)
+# set to a non-zero value
+unsaturated 1
+
+# 0 rebound method, 2: Papalouizou2011
+torque_to_acc   2
+
+# 0: sigma read from file, 1: default power low
+read_sig_from_file  0
