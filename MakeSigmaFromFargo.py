@@ -1,4 +1,4 @@
-# This file read a fargo output and convert that to the two columns style which can be read by rebound
+# This file read a fargo output and convert it to a two columns style which can be read by rebound
 import numpy as np
 import os
 import matplotlib.pyplot as plt

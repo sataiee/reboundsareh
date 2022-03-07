@@ -1,5 +1,5 @@
 export OPENGL=0
-REBSRC = /home/sara/Rebound/rebound/src/
+REBSRC = /home/sareh/REBOUND/rebound/src/
 include $(REBSRC)Makefile.defs
 
 all: librebound

@@ -17,13 +17,13 @@ typedef struct init_planet {
   double omega; //argument of the pericentre
   double f;
   double t_pert; //if not 0, a perturbation is applied on the planet's velocities 
-  double a_pert; // amplitude of the perturbationo
+  double a_pert; // amplitude of the perturbation
 } init_planet;
 
 /* --------function declerations ---------*/
 void additional_forces(struct reb_simulation* const r);
 void heartbeat(struct reb_simulation* const r);
-void read_variables(int n);
+void read_variables();
 void accel_from_formula(struct reb_simulation* const r, double alpha_sigma, double beta_temperature);
 double calculate_aspect_ratio(double dist);
 double calculate_sigma_at_rp(double dist); 

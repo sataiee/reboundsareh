@@ -1,4 +1,4 @@
-/* This file contains the  global variables for rebounds */
+/* This file contains the  global variables for reboundsareh */
 #define MAX_SIZE 50
 #define THICKNESSSMOOTHING 0.6
 #define ADIABATICINDEX     1.0 //for a locally isothermal it is 1.0, must be changed for a non-isothermal model

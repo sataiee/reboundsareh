@@ -1,9 +1,9 @@
 /* @author: Sareh Ataiee   *
- * This setup, can perfrom 
+ * This setup, can perform 
  * 1) Migration of a planet in a disc with given properties
  *    using Paardekooper+fendyke models and given surface density profile
  * 2) Migration of the planets at the disc inner edge
- *    using different profiles
+ *    using different profiles for the migration timescales
  */
 
 #include <stdio.h>
@@ -26,7 +26,7 @@ double tdump = 10*2*M_PI;
 int main(int argc, char* argv[]){
     srand((long)time(NULL)); /* initialize rand() */
     int nplanets, i;
-    char read_from[20] = "restartdisc"; //can be fargo, rebound, disc, or restartdisc
+    char read_from[20] = "disc"; //can be fargo, rebound, disc, or restartdisc
     if (strcmp(read_from, "fargo") == 0){
         printf("It is pure n-body.\n");
         printf("Reading the planets orbital elements from fargo outputs...\n");
@@ -62,9 +62,8 @@ int main(int argc, char* argv[]){
     r->integrator     = REB_INTEGRATOR_WHFAST;
 
     if ((strcmp(read_from, "restartdisc") == 0) || strcmp(read_from, "disc") == 0){
-        int n_vars=14;
         // reading and setting the variables
-        read_variables(n_vars);
+        read_variables();
 
         //If read_sig_from_file, here we fill the rad and sigma array
         if (read_sig_from_file == 0)
@@ -90,7 +89,7 @@ int main(int argc, char* argv[]){
         reb_add(r, p);
     }
     
-    //Move the calculation to the center of mass
+    //Move the calculation to the centre of mass
     reb_move_to_com(r);
     
     // Do the integration
@@ -115,55 +114,53 @@ int main(int argc, char* argv[]){
 
 
 
-void read_variables(int n){
+void read_variables(){
     char line[350], variable[100];
     double value;
     char *names[14] = {"alpha_sigma", "sigma0", "h0", "flaring", "without_sg_term", \
                         "without_e_damping", "alpha_visc", "isothermal", "unsaturated",\
                         "torque_to_acc", "read_sig_from_file", "stellar_torque", "R_star_to_sun",\
                         "R_co"};
-    int i, check_n_vars=0;   
     
-    // array for reading the disc and planet parameters
-    basic_variable vars[n];
-    
-    // Initializing variable array
-    for (i=0; i<n; i++){
-        vars[i].name = names[i];
-        vars[i].value = 0.0;
-        vars[i].read = 0;  
-    }
-        
+    int i, n_vars=0;   
     //Read the parameter file
     FILE *input = fopen("parameters.par", "r");
     if (input == NULL)
         reb_exit("The parameter file does not exist.\n");
-    
-    // Read the variables
+
+    // Find the number of variables in the file
     while(fgets(line, 349, input) != NULL){
         if ((line[0] != '#') && (line[0] != '\n')){
-            check_n_vars++;
-            sscanf(line, "%s %lf", variable, &value);
-            for (i=0; i<n; i++){
-                if (strcmp(vars[i].name,variable) == 0){
-                    vars[i].value = value;
-                    if (vars[i].read == 0.0)
-                        vars[i].read = 1.0;
-                    else{
-                        printf("%s, %e, %d\n", vars[i].name, vars[i].value, vars[i].read);
-                        reb_exit("One variable is repeated more than once.\n");
-                    }
-                }
-            }
+            n_vars++;
         }
     }
-    if (check_n_vars != n){
-        printf("read variables=%d, number of variables must be %d\n", check_n_vars, n);
-        reb_exit("Some variables are missing or extra in the parameters file\n");
+    
+    // array for reading the disc and planet parameters
+    basic_variable vars[n_vars];
+    for (int i=0; i<n_vars; i++) vars[i].read = 0.0;
+    
+    // Read the variables
+    rewind(input);
+    i = 0;
+    while(fgets(line, 349, input) != NULL){
+        if ((line[0] != '#') && (line[0] != '\n')){
+            sscanf(line, "%s %lf", variable, &value);
+            vars[i].name = variable;
+            vars[i].value = value;
+            if (vars[i].read == 0.0){
+                vars[i].read = 1.0;
+                printf("%s = %g\n", vars[i].name, vars[i].value);
+            }else{
+                printf("%s, %e, %d\n", vars[i].name, vars[i].value, vars[i].read);
+                reb_exit("One variable is repeated more than once.\n");
+            }
+                    i++;
+        }
     }
     fclose(input);
     
-    for (int i=0; i<n; i++){
+    printf("-----------------------------\n");
+    for (int i=0; i<n_vars; i++){
         if (strcmp(vars[i].name, "alpha_sigma")==0)     alpha_sigma = vars[i].value;
         if (strcmp(vars[i].name, "sigma0")==0)          sigma0 = vars[i].value;
         if (strcmp(vars[i].name, "h0")==0)              h0 = vars[i].value;
@@ -179,12 +176,11 @@ void read_variables(int n){
         if (strcmp(vars[i].name, "R_star_to_sun")==0)   R_star_to_sun = vars[i].value * 0.00465047; //in au
         if (strcmp(vars[i].name, "R_co")==0)            R_co = vars[i].value;
     }    
-    
+    printf("-----------------------------\n");
     // Check if the disc is really meant to be isothermal
     if (isothermal == 0 && ADIABATICINDEX != 1) 
         reb_exit("Your disc supposed to be locally-isothermal but the adiabatic index is not 1.\n");
-    
-  
+      
 }
 
 
@@ -576,13 +572,7 @@ void additional_forces(struct reb_simulation* const r){
         if (torque_to_acc == 0){
             // The method of Rebound
             double hh = x*vy - y*vx;
-            //double v = sqrt ( vx*vx + vy*vy);
             double r = dist;
-            //double vr = (x*vx + y*vy)/r;
-            //double ex = 1./mu*( (v*v-mu/r)*x - r*vr*vx );
-            //double ey = 1./mu*( (v*v-mu/r)*y - r*vr*vy );
-            //double e = sqrt( ex*ex + ey*ey);        // eccentricity
-            //double a = -mu/( v*v - 2.*mu/r );            // semi major axis
             double prefac1 = 1./(1.-e*e) /tau_ecc[i]/1.5;
             double prefac2 = 1./(r*hh) * sqrt(mu/a/(1.-e*e))  /tau_ecc[i]/1.5;
             ax = -1. * vx/tau_mig[i] - vx*prefac1 - (hh*y)*prefac2;
